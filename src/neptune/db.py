@@ -34,11 +34,11 @@ def get_pool() -> ConnectionPool:
     global _pool
     if _pool is None:
         _pool = ConnectionPool(
-            conninfo=settings.database_url,
+            conninfo="",                            # using kwargs instead of a URI string
+            kwargs={**settings.psycopg_kwargs, "autocommit": False},
             min_size=1,
             max_size=10,
-            timeout=30,            # seconds to wait for a free connection
-            kwargs={"autocommit": False},
+            timeout=30,                             # seconds to wait for a free connection
             open=True,
         )
         atexit.register(_close_pool)

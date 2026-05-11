@@ -9,6 +9,8 @@ Usage from anywhere in the codebase:
 
 from __future__ import annotations
 
+from urllib.parse import quote_plus
+
 from pydantic import SecretStr, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -42,12 +44,30 @@ class Settings(BaseSettings):
     @computed_field
     @property
     def database_url(self) -> str:
-        """libpq-style URL for psycopg / asyncpg / SQLAlchemy."""
-        pw = self.postgres_password.get_secret_value()
-        return (
-            f"postgresql://{self.postgres_user}:{pw}"
-            f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
-        )
+        """libpq-style URL for SQLAlchemy / alembic / log-friendly display.
+
+        Password is URL-encoded so special chars (e.g. `/` from `openssl rand
+        -base64`) don't break URI parsing. For psycopg connections prefer
+        `psycopg_kwargs` below — no string parsing means no escaping bugs.
+        """
+        user = quote_plus(self.postgres_user)
+        pw = quote_plus(self.postgres_password.get_secret_value())
+        return f"postgresql://{user}:{pw}@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+
+    @property
+    def psycopg_kwargs(self) -> dict[str, str | int]:
+        """Kwargs accepted by `psycopg.connect()` / `ConnectionPool(kwargs=...)`.
+
+        Not a computed_field on purpose — we don't want the password leaking
+        into pydantic's serialization output.
+        """
+        return {
+            "host": self.postgres_host,
+            "port": self.postgres_port,
+            "user": self.postgres_user,
+            "password": self.postgres_password.get_secret_value(),
+            "dbname": self.postgres_db,
+        }
 
 
 # A single shared instance. Importing this is cheap; instantiating again would
