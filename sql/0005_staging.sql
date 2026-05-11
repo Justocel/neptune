@@ -1,0 +1,37 @@
+-- Migration 0005 — staging layer.
+--
+-- Staging is where we go from "as-scraped" to "trustable":
+--   1. Cast JSONB fields into typed columns.
+--   2. Deduplicate within a source (last-write-wins or merge logic).
+--   3. Resolve foreign keys (e.g. raw.reviews.restaurant_id is already set, but
+--      raw.menu_snapshot.item_id needs lookup against dim.menu_item).
+--   4. Apply source-specific cleaning (e.g. unify 'Wellfleet'/'wellfleet'/'WELLFLEET').
+--
+-- Most of these are VIEWs over raw.*, occasionally MATERIALIZED VIEWs when the
+-- transform is expensive. Objects get added one-by-one in the ETL phase
+-- (week 4 in plan.md §6), one PR per source.
+--
+-- For now: schema only — placeholder for future objects.
+--
+-- Example pattern (intentionally commented out — wire up when raw data exists):
+--
+-- CREATE OR REPLACE VIEW staging.reviews AS
+-- SELECT
+--   r.review_id,
+--   r.vendor,
+--   r.restaurant_id,
+--   r.posted_at,
+--   r.rating,
+--   r.body,
+--   r.reviewer_id,
+--   r.reviewer_total_reviews,
+--   r.reviewer_boston_reviews,
+--   r.reviewer_home_city,
+--   CASE
+--     WHEN COALESCE(r.reviewer_boston_reviews, 0) >= 3 THEN 'local'
+--     WHEN COALESCE(r.reviewer_total_reviews, 0) <= 1 THEN 'tourist'
+--     ELSE 'unknown'
+--   END AS reviewer_class
+-- FROM raw.reviews r;
+
+SELECT 'staging schema ready' AS status;

@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# uv / virtualenv
+.venv/
+venv/
+env/
+
+# Distribution / build
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Project caches
+.cache/
+data/raw/
+data/interim/
+data/processed/
+*.parquet
+*.duckdb
+
+# Playwright
+playwright-report/
+test-results/
+
+# Logs
+*.log
+logs/
